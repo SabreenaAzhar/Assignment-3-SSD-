@@ -1,18 +1,36 @@
 pipeline {
     agent any
 
+    environment {
+        SONAR_TOKEN = credentials('SONAR_TOKEN')
+        SCANNER_HOME = tool 'SonarScanner'
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                // Pull code from the Git repo
                 checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Run your build steps here"
+                // Example for Maven:
+                // sh 'mvn clean install'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarServer') {
-                    bat '"D:\apache-tomcat-10.1.48-windows-x64\sonar-scanner-cli-7.3.0.5189-windows-x64\sonar-scanner-7.3.0.5189-windows-x64\bin\sonar-scanner.bat" -Dsonar.projectKey=myproject -Dsonar.sources=. -Dsonar.host.url=%SONAR_HOST_URL% -Dsonar.login=%SONAR_AUTH_TOKEN%'
+                withSonarQubeEnv('MySonar') {
+                    sh """
+                    ${SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectKey=myproject \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=http://localhost:9000 \
+                    -Dsonar.login=${SONAR_TOKEN}
+                    """
                 }
             }
         }
@@ -22,12 +40,6 @@ pipeline {
                 timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
-            }
-        }
-
-        stage('Build') {
-            steps {
-                bat 'mvn clean package'
             }
         }
     }
