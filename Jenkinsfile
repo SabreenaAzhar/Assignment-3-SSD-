@@ -1,24 +1,44 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'JDK17'              // your JDK name
+        maven 'MAVEN3'           // your Maven installation name
+    }
+
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build') {
             steps {
-                echo 'Building the project...'
+                sh 'mvn clean package'
             }
         }
 
-        stage('Test') {
+        stage('SonarQube Analysis') {
             steps {
-                echo 'Running tests...'
+                withSonarQubeEnv('SonarServer') {
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=Myproject \
+                        -Dsonar.projectName=Myproject \
+                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.login=$SONARQUBE_AUTH_TOKEN
+                    """
+                }
             }
         }
 
-        stage('Deploy') {
+        stage("Quality Gate") {
             steps {
-                echo 'Deployment step...'
+                timeout(time: 3, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
     }
-    
 }
