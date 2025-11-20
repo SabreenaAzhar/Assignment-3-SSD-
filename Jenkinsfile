@@ -26,7 +26,7 @@ pipeline {
                 withSonarQubeEnv('MySonar') {
                     sh """
                     ${SCANNER_HOME}/bin/sonar-scanner \
-                    -Dsonar.projectKey=myproject \
+                    -Dsonar.projectKey=Myproject \
                     -Dsonar.sources=. \
                     -Dsonar.host.url=http://localhost:9000 \
                     -Dsonar.login=${SONAR_TOKEN}
