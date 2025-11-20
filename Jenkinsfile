@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONAR_TOKEN = credentials('SONAR_TOKEN')
+        SONAR_TOKEN = credentials('jenkins-token')
         SCANNER_HOME = tool 'SonarScanner'
     }
 
